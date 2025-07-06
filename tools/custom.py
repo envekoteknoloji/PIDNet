@@ -81,16 +81,20 @@ if __name__ == '__main__':
     model.eval()
     with torch.no_grad():
         for img_path in images_list:
-            img_name = img_path.split("\\")[-1]
-            img = cv2.imread(os.path.join(args.r, img_name),
-                               cv2.IMREAD_COLOR)
+            img_name = os.path.basename(img_path)
+            # Prefer img_path if it exists, otherwise join args.r and img_name
+            if os.path.isfile(img_path):
+                used_img_path = img_path
+            else:
+                used_img_path = os.path.join(args.r, img_name)
+            print(f"Reading image from: {used_img_path}")
+            img = cv2.imread(used_img_path, cv2.IMREAD_COLOR)
             sv_img = np.zeros_like(img).astype(np.uint8)
             img = input_transform(img)
             img = img.transpose((2, 0, 1)).copy()
             img = torch.from_numpy(img).unsqueeze(0).cuda()
             pred = model(img)
-            pred = F.interpolate(pred, size=img.size()[-2:], 
-                                 mode='bilinear', align_corners=True)
+            pred = F.interpolate(pred, size=img.size()[-2:], mode='bilinear', align_corners=True)
             pred = torch.argmax(pred, dim=1).squeeze(0).cpu().numpy()
             
             for i, color in enumerate(color_map):
