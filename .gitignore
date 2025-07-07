@@ -7,6 +7,7 @@
 *.mp4
 *.onnx
 *.pt
+*.pth
 
 ### Python ###
 # Byte-compiled / optimized / DLL files

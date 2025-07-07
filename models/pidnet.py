@@ -89,7 +89,9 @@ class PIDNet(nn.Module):
             self.seghead_p = segmenthead(planes * 2, head_planes, num_classes)
             self.seghead_d = segmenthead(planes * 2, planes, 1)           
 
-        self.final_layer = segmenthead(planes * 4, head_planes, num_classes)
+        # Upsample predictions by 8× inside the network so raw output matches the
+        # original input resolution (e.g., 480×640 when the input is 480×640).
+        self.final_layer = segmenthead(planes * 4, head_planes, num_classes, scale_factor=8)
 
 
         for m in self.modules():
