@@ -103,19 +103,14 @@ class BaseDataset(data.Dataset):
         return image, label, edge
 
 
-    def gen_sample(self, image, label,
-                   multi_scale=True, is_flip=True, edge_pad=True, edge_size=4, city=True):
+    def gen_sample(self, image, label, multi_scale=True, is_flip=True, edge_pad=True, edge_size=4, city=True):
 
         edge = cv2.Canny(label, 0.1, 0.2)
-        cv2.imshow("Canny Edge Detection", edge)
         kernel = np.ones((edge_size, edge_size), np.uint8)
         if edge_pad:
             edge = edge[y_k_size:-y_k_size, x_k_size:-x_k_size]
             edge = np.pad(edge, ((y_k_size,y_k_size),(x_k_size,x_k_size)), mode='constant')
         edge = (cv2.dilate(edge, kernel, iterations=1)>50)*1.0
-        cv2.imshow("image", image)
-        cv2.imshow("edge", edge)
-        cv2.waitKey(0)
         if multi_scale:
             rand_scale = 0.5 + random.randint(0, self.scale_factor) / 10.0
             image, label, edge = self.multi_scale_aug(image, label, edge,

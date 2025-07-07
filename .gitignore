@@ -8,6 +8,8 @@
 *.onnx
 *.pt
 *.pth
+log/
+output/
 
 ### Python ###
 # Byte-compiled / optimized / DLL files

@@ -17,7 +17,7 @@ DATASET:
 MODEL:
   NAME: pidnet_s
   NUM_OUTPUTS: 2
-  PRETRAINED: "pretrained_models/imagenet/PIDNet_S_ImageNet.pth"  # Using ImageNet pretrained model
+  PRETRAINED: "pretrained_models/cityscapes/PIDNet_S_Cityscapes_test.pt"  # Using Cityscapes pretrained model
   ALIGN_CORNERS: true
 LOSS:
   USE_OHEM: true
@@ -30,18 +30,18 @@ TRAIN:
   - 640
   - 480
   BASE_SIZE: 640
-  BATCH_SIZE_PER_GPU: 48  # Can be adjusted based on your GPU memory
+  BATCH_SIZE_PER_GPU: 32  # Can be adjusted based on your GPU memory
   SHUFFLE: true
   BEGIN_EPOCH: 0
   END_EPOCH: 150
   RESUME: false
   OPTIMIZER: sgd
-  LR: 0.005
+  LR: 0.001
   WD: 0.0005
   MOMENTUM: 0.9
   NESTEROV: false
   FLIP: true
-  MULTI_SCALE: true
+  MULTI_SCALE: false
   IGNORE_LABEL: 255
   SCALE_FACTOR: 16
 TEST:

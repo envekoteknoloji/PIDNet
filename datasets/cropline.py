@@ -101,14 +101,17 @@ class CropLine(BaseDataset):
             borderMode=cv2.BORDER_CONSTANT,
             borderValue=(0, 0, 0))
         
-        # Apply rotation to label
+        # Apply rotation to label - use INTER_NEAREST to prevent interpolation between class values
         rotated_label = cv2.warpAffine(
             label, 
             rotation_matrix, 
             (width, height),
             flags=cv2.INTER_NEAREST,
             borderMode=cv2.BORDER_CONSTANT,
-            borderValue=(self.ignore_label))
+            borderValue=(0))  # Use 0 (background) instead of ignore_label for border
+        
+        # Fix any label pixels that may have become ignore_label
+        rotated_label[rotated_label == self.ignore_label] = 0
         
         return rotated_image, rotated_label
         

@@ -169,7 +169,7 @@ def main():
     start = timeit.default_timer()
     end_epoch = config.TRAIN.END_EPOCH
     num_iters = config.TRAIN.END_EPOCH * epoch_iters
-    real_end = 120+1 if 'camvid' in config.DATASET.TRAIN_SET else end_epoch
+    real_end = end_epoch
     
     for epoch in range(last_epoch, real_end):
 
