@@ -60,6 +60,7 @@ RUN pip install tensorboardX
 RUN pip install yacs
 RUN pip install numpy==1.26.4
 RUN pip install opencv-python
+RUN pip install PySide6
 
 # ----------------------------
 # Default container command

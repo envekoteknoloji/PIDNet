@@ -155,10 +155,10 @@ class CropLine(BaseDataset):
         label = self.color2label(color_map)
         
         # Apply rotation augmentation
-        image, label = self.random_rotate(image, label)
+        #image, label = self.random_rotate(image, label)
         
         # Apply blur augmentation
-        image, label = self.random_blur(image, label)
+        #image, label = self.random_blur(image, label)
 
         # Use default augmentation from base dataset
         image, label, edge = self.gen_sample(image, label, 

@@ -33,7 +33,7 @@ TRAIN:
   BATCH_SIZE_PER_GPU: 32  # Can be adjusted based on your GPU memory
   SHUFFLE: true
   BEGIN_EPOCH: 0
-  END_EPOCH: 150
+  END_EPOCH: 300
   RESUME: false
   OPTIMIZER: sgd
   LR: 0.001
