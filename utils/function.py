@@ -53,10 +53,10 @@ def train(config, epoch, num_epoch, epoch_iters, base_lr,
         tic = time.time()
 
         # update average loss
-        ave_loss.update(loss.item())
-        ave_acc.update(acc.item())
-        avg_sem_loss.update(loss_list[0].mean().item())
-        avg_bce_loss.update(loss_list[1].mean().item())
+        ave_loss.update(loss.detach().item())
+        ave_acc.update(acc.detach().item())
+        avg_sem_loss.update(loss_list[0].mean().detach().item())
+        avg_bce_loss.update(loss_list[1].mean().detach().item())
 
         lr = adjust_learning_rate(optimizer,
                                   base_lr,
