@@ -47,6 +47,7 @@ class LabelingApp:
         self.ui.frame_selected.connect(self.on_frame_selected)
         self.ui.visualize_requested.connect(self.on_visualize_requested)
         self.ui.create_dataset_requested.connect(self.on_create_dataset_requested)
+        self.ui.save_all_modified_requested.connect(self.on_save_all_modified_requested)
     
     def run(self):
         # Show UI and start event loop
@@ -361,6 +362,54 @@ class LabelingApp:
         self.ui.update_status(
             f"Dataset lists generated (Train {len(train_files)}, Val {len(val_files)}, Test {len(test_files)})."
         )
+
+    def on_save_all_modified_requested(self):
+        """Save all frames that have drawn lines, skip frames without lines"""
+        if not self.project_dir:
+            self.ui.show_error("Error", "Project directory not set. Please set up a project first.")
+            return
+
+        if not self.frames:
+            self.ui.show_error("Error", "No frames loaded.")
+            return
+
+        saved_count = 0
+        skipped_count = 0
+
+        for frame_index in range(len(self.frames)):
+            # Check if this frame has any lines drawn
+            has_lines = frame_index in self.line_history and len(self.line_history[frame_index]) > 0
+            
+            if has_lines:
+                # Save this frame and its label
+                filename = f"frame_{frame_index:06d}"
+                
+                # Save the frame image
+                frame_path = os.path.join(self.images_dir, f"{filename}.png")
+                cv2.imwrite(frame_path, self.frames[frame_index])
+                
+                # Convert the RGBA label to BGR format for saving
+                label = self.label_images[frame_index]
+                # Remove alpha channel for saving (OpenCV prefers BGR)
+                label_bgr = cv2.cvtColor(label, cv2.COLOR_BGRA2BGR)
+                
+                # Save the label image
+                label_path = os.path.join(self.labels_dir, f"{filename}.png")
+                cv2.imwrite(label_path, label_bgr)
+                
+                saved_count += 1
+            else:
+                skipped_count += 1
+
+        # Show summary message
+        if saved_count > 0:
+            self.ui.show_info("Save Complete", 
+                            f"Saved {saved_count} modified frames.\n"
+                            f"Skipped {skipped_count} frames without lines.")
+            self.ui.update_status(f"Saved {saved_count} modified frames, skipped {skipped_count} empty frames.")
+        else:
+            self.ui.show_info("No Modified Frames", "No frames with drawn lines found to save.")
+            self.ui.update_status("No modified frames found to save.")
 
     def on_frame_selected(self, frame_index):
         # Handle frame selection from the list widget

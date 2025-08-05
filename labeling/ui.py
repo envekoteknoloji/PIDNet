@@ -23,6 +23,7 @@ class LabelingToolUI(QMainWindow):
     frame_selected = Signal(int)
     visualize_requested = Signal()
     create_dataset_requested = Signal()
+    save_all_modified_requested = Signal()
     
     def __init__(self):
         super().__init__()
@@ -57,7 +58,7 @@ class LabelingToolUI(QMainWindow):
         self.graphics_view = QGraphicsView()
         self.graphics_scene = QGraphicsScene()
         self.graphics_view.setScene(self.graphics_scene)
-        self.graphics_view.setMinimumSize(Config.FRAME_WIDTH, Config.FRAME_HEIGHT)
+        self.graphics_view.setMinimumSize(Config.FRAME_WIDTH + 200, Config.FRAME_HEIGHT + 150)
         self.graphics_view.setMouseTracking(True)  # Enable mouse tracking for line preview
         
         # Add pixmap items to scene for frame and mask
@@ -78,22 +79,21 @@ class LabelingToolUI(QMainWindow):
         graphics_section.addWidget(graphics_title)
         graphics_section.addWidget(self.graphics_view)
         
-        # First add the graphics view to the main view area (LEFT)
-        view_area.addLayout(graphics_section)
-        
         # Frame list with title (RIGHT SIDE)
         frame_list_section = QVBoxLayout()
         frame_list_title = QLabel("Frame List")
         frame_list_title.setAlignment(Qt.AlignCenter)
         self.frame_list = QListWidget()
-        self.frame_list.setMinimumWidth(150)
+        self.frame_list.setMinimumWidth(120)
+        self.frame_list.setMaximumWidth(180)
         self.frame_list.itemClicked.connect(self.on_frame_list_item_clicked)
         
         frame_list_section.addWidget(frame_list_title)
         frame_list_section.addWidget(self.frame_list)
         
-        # Then add the frame list to the main view area (RIGHT)
-        view_area.addLayout(frame_list_section)
+        # Set stretch factors: graphics view gets more space (3), frame list gets less (1)
+        view_area.addLayout(graphics_section, 3)
+        view_area.addLayout(frame_list_section, 1)
         
         # Controls and settings
         controls_layout = QHBoxLayout()
@@ -168,6 +168,13 @@ class LabelingToolUI(QMainWindow):
         self.dataset_button.setEnabled(False)
         button_layout.addWidget(self.dataset_button)
         
+        # Save All Modified button
+        self.save_all_modified_button = QPushButton("Save All Modified")
+        self.save_all_modified_button.setFixedSize(Config.BUTTON_WIDTH + 20, Config.BUTTON_HEIGHT)
+        self.save_all_modified_button.clicked.connect(self.save_all_modified_requested.emit)
+        self.save_all_modified_button.setEnabled(False)
+        button_layout.addWidget(self.save_all_modified_button)
+        
         # Load video button
         self.load_video_button = QPushButton("Load Video")
         self.load_video_button.setFixedSize(Config.BUTTON_WIDTH, Config.BUTTON_HEIGHT)
@@ -203,8 +210,26 @@ class LabelingToolUI(QMainWindow):
         self.load_video_button.setEnabled(True)
     
     def update_frame_display(self, pixmap):
+        # Clear any preview lines when switching frames
+        if self.preview_line and self.preview_line in self.graphics_scene.items():
+            self.graphics_scene.removeItem(self.preview_line)
+            self.preview_line = None
+        self.last_point = None
+        
+        # Update the frame pixmap
         self.frame_pixmap_item.setPixmap(pixmap)
-        self.graphics_view.fitInView(self.graphics_scene.sceneRect(), Qt.KeepAspectRatio)
+        
+        # Reset the scene rect to fit the image size and center it
+        if not pixmap.isNull():
+            # Set scene rect to the pixmap size
+            self.graphics_scene.setSceneRect(pixmap.rect())
+            
+            # Reset the view transform and fit the image
+            self.graphics_view.resetTransform()
+            self.graphics_view.fitInView(pixmap.rect(), Qt.KeepAspectRatio)
+            
+            # Center the view on the image
+            self.graphics_view.centerOn(pixmap.rect().center())
         
     def update_mask_display(self, pixmap):
         self.mask_pixmap_item.setPixmap(pixmap)
@@ -270,6 +295,7 @@ class LabelingToolUI(QMainWindow):
         self.reset_button.setEnabled(save_enabled)  # Reset is enabled when frame is loaded (same condition as save)
         self.visualize_button.setEnabled(save_enabled)
         self.dataset_button.setEnabled(save_enabled)
+        self.save_all_modified_button.setEnabled(save_enabled)
     
     def show_error(self, title, message):
         QMessageBox.critical(self, title, message)
